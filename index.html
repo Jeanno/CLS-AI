@@ -52,7 +52,6 @@
             Contrast: () => <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 100 16z"/></svg>
         };
 
-        // Text Content for UI Localization
         const T = {
             zh: {
                 appTitle: "法庭語文組 (Court Language Section)",
@@ -148,7 +147,6 @@
             }
         };
 
-        // All 5 Pre-defined Cases (已全面替換為 20 輪擴充版，並加入港灣豪庭案)
         const ORIGINAL_PRESETS = [
             {
                 id: "preset_dccc_18_2025",
@@ -498,7 +496,6 @@
             const recognitionRef = useRef(null);
             const mediaRecorderRef = useRef(null);
             const audioChunksRef = useRef([]);
-            const micStreamRef = useRef(null); 
 
             const TString = T[lang];
 
@@ -514,14 +511,6 @@
                 };
                 loadVoices();
                 if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
-            }, []);
-
-            useEffect(() => {
-                return () => {
-                    if (micStreamRef.current) {
-                        micStreamRef.current.getTracks().forEach(track => track.stop());
-                    }
-                };
             }, []);
 
             const handleUnlockAdmin = () => {
@@ -578,6 +567,9 @@
                     if (recognitionRef.current) recognitionRef.current.stop();
                     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
                         mediaRecorderRef.current.stop();
+                        if (mediaRecorderRef.current.stream) {
+                            mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
+                        }
                     }
                     setIsRecording(false);
                     return;
@@ -585,79 +577,80 @@
 
                 audioChunksRef.current = [];
 
-                const startProcess = (stream) => {
-                    micStreamRef.current = stream; 
-                    const recorder = new MediaRecorder(stream);
-                    mediaRecorderRef.current = recorder;
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("您的瀏覽器不支援語音辨識功能。建議使用最新版 Google Chrome。");
+                    return;
+                }
 
-                    recorder.ondataavailable = e => {
-                        if (e.data.size > 0) audioChunksRef.current.push(e.data);
-                    };
+                const rec = new SpeechRecognition();
+                recognitionRef.current = rec;
+                rec.continuous = true;
+                rec.interimResults = true;
+                rec.lang = targetLangCode;
 
-                    recorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        setRecordedUrls(prev => ({ ...prev, [turnIdx]: audioUrl }));
-                    };
+                rec.onstart = () => {
+                    setIsRecording(true);
+                    setRecordingTurn(turnIdx);
+                };
 
-                    recorder.start();
-
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if (SpeechRecognition) {
-                        const rec = new SpeechRecognition();
-                        recognitionRef.current = rec;
-                        rec.continuous = true;
-                        rec.interimResults = true;
-                        rec.lang = targetLangCode;
-
-                        rec.onstart = () => {
-                            setIsRecording(true);
-                            setRecordingTurn(turnIdx);
-                        };
-
-                        rec.onresult = (event) => {
-                            let finalTranscript = '';
-                            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
-                            }
-                            if (finalTranscript) {
-                                setUserTranslations(prev => ({ ...prev, [turnIdx]: (prev[turnIdx] || "") + finalTranscript }));
-                            }
-                        };
-
-                        rec.onerror = (e) => {
-                            console.error("Speech Recognition Error:", e);
-                            if(e.error === 'not-allowed') {
-                                alert("語音辨識被拒絕。\n如果是在本地硬碟 (file:///) 執行，Chrome 會強制阻擋或每次要求授權。\n建議解決方案：使用 Localhost 伺服器打開，或部署到靜態網頁空間。");
-                            }
-                        };
-                        
-                        rec.onend = () => {
-                            setIsRecording(false);
-                            setRecordingTurn(null);
-                        };
-
-                        try {
-                            rec.start();
-                        } catch (err) {
-                            console.error(err);
-                        }
+                rec.onresult = (event) => {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+                    }
+                    if (finalTranscript) {
+                        setUserTranslations(prev => ({ ...prev, [turnIdx]: (prev[turnIdx] || "") + finalTranscript }));
                     }
                 };
 
-                if (micStreamRef.current && micStreamRef.current.active) {
-                    startProcess(micStreamRef.current);
-                } else {
-                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                        navigator.mediaDevices.getUserMedia({ audio: true })
-                            .then(startProcess)
-                            .catch(err => {
-                                console.error(err);
-                                alert("無法存取麥克風。請確保已在瀏覽器或系統設定中授權！\n\n提示：若在本地硬碟執行 (file:///)，瀏覽器會因為安全機制而阻擋麥克風。請使用 VS Code 的 Live Server 或 Python 建立 Localhost 伺服器來打開此檔案！");
-                            });
-                    } else {
-                        alert("此瀏覽器環境不支援麥克風 API (缺少安全連線 HTTPS 或 Localhost)。");
+                rec.onerror = (e) => {
+                    console.error("Speech Recognition Error:", e.error);
+                    if (e.error === 'not-allowed') {
+                        alert("麥克風授權被拒絕。\n如果是在本地硬碟 (file:///) 執行，Chrome 可能會強制阻擋麥克風。請將此檔案上傳至 GitHub Pages，或使用 Localhost 伺服器打開！");
                     }
+                    setIsRecording(false);
+                    setRecordingTurn(null);
+                };
+
+                rec.onend = () => {
+                    setIsRecording(false);
+                    setRecordingTurn(null);
+                };
+
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(stream => {
+                            const recorder = new MediaRecorder(stream);
+                            mediaRecorderRef.current = recorder;
+
+                            recorder.ondataavailable = e => {
+                                if (e.data.size > 0) audioChunksRef.current.push(e.data);
+                            };
+
+                            recorder.onstop = () => {
+                                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                                const audioUrl = URL.createObjectURL(audioBlob);
+                                setRecordedUrls(prev => ({ ...prev, [turnIdx]: audioUrl }));
+                                stream.getTracks().forEach(track => track.stop());
+                            };
+
+                            recorder.start();
+                            
+                            try {
+                                rec.start();
+                            } catch (err) {
+                                console.error("Rec Start Error:", err);
+                            }
+                        })
+                        .catch(err => {
+                            console.error("MediaDevices Error:", err);
+                            alert(`無法存取麥克風 (${err.name})。\n請確保：\n1. 電腦麥克風硬體已接妥。\n2. 系統設定中已允許 Chrome 存取麥克風。\n3. 此網頁必須在 HTTPS 或 Localhost 環境下執行！`);
+                            setIsRecording(false);
+                            setRecordingTurn(null);
+                        });
+                } else {
+                    alert("瀏覽器環境不支援錄音 API (缺少安全連線 HTTPS)。");
                 }
             };
 
@@ -771,7 +764,7 @@
                             { turn: 7, role_zh: "辯方大律師", role_en: "Defense Counsel", lang: "en-US", text_zh: "I suggest that the allegation of indecent assault was entirely fabricated to vent your anger over the queue dispute.", text_en: "I suggest that the allegation of indecent assault was entirely fabricated to vent your anger over the queue dispute.", targetText_zh: "我向你指出，非禮嘅指控完全係你捏造出嚟，純粹係為咗發洩你對排隊糾紛嘅不滿。 ", targetText_en: "I suggest that the allegation of indecent assault was entirely fabricated to vent your anger over the queue dispute." },
                             { turn: 8, role_zh: "事主 / 證人", role_en: "Witness", lang: "zh-HK", text_zh: "我絕對唔同意。我事後即刻報告地鐵職員，有晒閉路電視，我唔會拿清白講笑！", text_en: "I absolutely disagree. I reported to the MTR staff immediately afterwards, there's CCTV everywhere, I won't joke with my innocence!", targetText_zh: "我絕對唔同意。我事後即刻報告地鐵職員，有晒閉路電視，我唔會拿清白講笑！", targetText_en: "I absolutely disagree. I reported the matter to MTR staff immediately afterwards, there was CCTV, and I would not joke with my reputation!" },
                             { turn: 9, role_zh: "辯方大律師", role_en: "Defense Counsel", lang: "en-US", text_zh: "Under the guidelines, any body contact through clothing can still be highly ambiguous. Is it possible it was just a normal brush?", text_en: "Under the guidelines, any body contact through clothing can still be highly ambiguous. Is it possible it was just a normal brush?", targetText_zh: "喺相關指引下，隔住衣物嘅身體接觸都可以好模糊。當時係咪有可能只係普通擦過？", targetText_en: "Under the guidelines, any body contact through clothing can still be highly ambiguous. Is it possible it was just a normal brush?" },
-                            { turn: 10, role_zh: "事主 / 證人", role_en: "Witness", lang: "zh-HK", text_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", text_en: "Absolutely not. The touching was very forceful and it was squeezed several times, how could it be an accidental brush?!", targetText_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", targetText_en: "Absolutely not. The touch was very hard and it was squeezed several times, how could it be an accidental brush?!" }
+                            { turn: 10, "role_zh": "事主 / 證人", role_en: "Witness", lang: "zh-HK", text_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", text_en: "Absolutely not. The touching was very forceful and it was squeezed several times, how could it be an accidental brush?!", targetText_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", targetText_en: "Absolutely not. The touch was very hard and it was squeezed several times, how could it be an accidental brush?!" }
                         ]
                     };
 
