@@ -13,7 +13,6 @@
     <!-- Tailwind CSS v4 Engine -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     
-    <!-- Custom Tailwind v4 Utilities & Themes -->
     <style type="text/tailwindcss">
         @utility animate-fade-in {
             animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -52,6 +51,7 @@
             Contrast: () => <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2V4a8 8 0 100 16z"/></svg>
         };
 
+        // Text Content for UI Localization
         const T = {
             zh: {
                 appTitle: "法庭語文組 (Court Language Section)",
@@ -60,6 +60,8 @@
                 trainerConfig: "訓練設定 (Trainer Config)",
                 practiceTurns: "練習輪數",
                 speechSpeed: "播放語速",
+                prosecutorVoice: "控方/律師語音 (Counsel Voice)",
+                witnessVoice: "被告/證人語音 (Witness Voice)",
                 presetLibrary: "教材庫清單 (Presets Library)",
                 unlockAdmin: "🔒 解鎖管理員",
                 adminMode: "🔓 管理模式",
@@ -97,7 +99,15 @@
                 avgTone: "平均忠實度",
                 avgLegal: "平均合規性",
                 avgDel: "流暢與儀態",
-                overallIdx: "綜合指數"
+                overallIdx: "綜合指數",
+                cloudSyncTitle: "☁️ 雲端同步與備份 (Cloud Sync)",
+                githubToken: "GitHub Personal Access Token",
+                gistId: "Gist ID (留空則自動新建)",
+                uploadGist: "📤 上傳教材庫至 Gist",
+                downloadGist: "📥 從 Gist 下載教材庫",
+                bundleHtml: "📦 打包下載完整系統 HTML",
+                syncStatus: "同步狀態",
+                tokenHint: "需具備 gist 權限，資料僅存於瀏覽器本地。"
             },
             en: {
                 appTitle: "Court Language Section (CLS)",
@@ -106,6 +116,8 @@
                 trainerConfig: "Trainer Config",
                 practiceTurns: "Practice Turns",
                 speechSpeed: "Playback Speed",
+                prosecutorVoice: "Counsel Voice",
+                witnessVoice: "Witness/Defendant Voice",
                 presetLibrary: "Presets Library",
                 unlockAdmin: "🔒 Unlock Admin",
                 adminMode: "🔓 Admin Mode",
@@ -143,41 +155,20 @@
                 avgTone: "Tone",
                 avgLegal: "Legal Terms",
                 avgDel: "Delivery",
-                overallIdx: "Overall Index"
+                overallIdx: "Overall Index",
+                cloudSyncTitle: "☁️ Cloud Sync & Backup",
+                githubToken: "GitHub Personal Access Token",
+                gistId: "Gist ID (leave empty to create new)",
+                uploadGist: "📤 Upload to Gist",
+                downloadGist: "📥 Download from Gist",
+                bundleHtml: "📦 Export Bundled HTML",
+                syncStatus: "Status",
+                tokenHint: "Requires 'gist' scope. Token is stored locally in browser only."
             }
         };
 
+        // All Pre-defined Cases
         const ORIGINAL_PRESETS = [
-            {
-                id: "preset_dccc_18_2025",
-                title_zh: "刑事 ➜ 港灣豪庭餐廳爆竊及單車接應案 (DCCC 18/2025) 【置頂】",
-                title_en: "Criminal ➜ Metro Harbour Plaza Restaurant Burglary (DCCC 18/2025) [Pinned]",
-                category: "criminal",
-                desc_zh: "改編自大角咀港灣豪庭餐廳爆竊案。第一被告否認參與入屋犯法罪，辯稱案發凌晨騎單車到通州街公園僅為借300元給朋友搭的士，並稱在不知情下協助扶著裝有被盜保險箱的白色膠籃。考驗對「老爆、睇水、砌生豬肉」等黑語的傳譯及律師盤問句式。",
-                desc_en: "Adapted from a restaurant burglary case. D1 denied burglary, claiming he only rode a bicycle to the park at dawn to lend $300 to D3, unknowingly helping transport a stolen safe. Tests interpretation of street slang (e.g. 'lookout', 'frame-up') and strict cross-examination formatting.",
-                dialogue: [
-                    { "turn": 1, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "Mr. Fong, I put it to you that on the early morning of April 16, you met D3 at Tung Chau Street Park and formulated a joint enterprise to commit burglary at the restaurant, correct?", "text_en": "Mr. Fong, I put it to you that on the early morning of April 16, you met D3 at Tung Chau Street Park and formulated a joint enterprise to commit burglary at the restaurant, correct?", "targetText_zh": "方先生，我向你指出，喺4月16日凌晨，你喺通州街公園同第三被告會面，並且共同策劃去嗰間餐廳進行爆竊，係咪？", "targetText_en": "Mr. Fong, I put it to you that on the early morning of April 16, you met D3 at Tung Chau Street Park and formulated a joint enterprise to commit burglary at the restaurant, correct?" },
-                    { "turn": 2, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "邊有啲噉嘅事！我落去只係應約傾偈，佢一開口叫我做「老爆」，我已經即刻話「呢啲嘢我唔搞」，然後走咗啦！", "text_en": "邊有啲噉嘅事！我落去只係應約傾偈，佢一開口叫我做「老爆」，我已經即刻話「呢啲嘢我唔搞」，然後走咗啦！", "targetText_zh": "邊有啲噉嘅事！我落去只係應約傾偈，佢一開口叫我做「老爆」，我已經即刻話「呢啲嘢我唔搞」，然後走咗啦！", "targetText_en": "There is no such thing! I only went down to meet him for a chat. The moment he asked me to do a 'burglary', I immediately said 'I don't do this kind of thing' and left!" },
-                    { "turn": 3, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "If you were so strongly opposed to the burglary, why did you return to the park on a bicycle shortly after 03:58 hours?", "text_en": "If you were so strongly opposed to the burglary, why did you return to the park on a bicycle shortly after 03:58 hours?", "targetText_zh": "如果你對爆竊咁反感，點解你喺凌晨三點五十八分之後，又踩住單車返去個公園度？", "targetText_en": "If you were so strongly opposed to the burglary, why did you return to the park on a bicycle shortly after 03:58 hours?" },
-                    { "turn": 4, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "佢打嚟話要借三百蚊搭的士吖嘛！我踩單車出去，都係想速去速回，借完錢畀佢就返屋企㗎啦。", "text_en": "佢打嚟話要借三百蚊搭的士吖嘛！我踩單車出去，都係想速去速回，借完錢畀佢就返屋企㗎啦。", "targetText_zh": "佢打嚟話要借三百蚊搭的士吖嘛！我踩單車出去，都係想速去速回，借完錢畀佢就返屋企㗎啦。", "targetText_en": "Because he called and said he wanted to borrow 300 dollars for a taxi! I rode my bicycle out just because I wanted to make a quick trip, lend him the money, and go home." },
-                    { "turn": 5, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "I suggest to you that from 05:12 to 05:18 hours, you were actually riding your bicycle back and forth across the street from the restaurant to act as a lookout.", "text_en": "I suggest to you that from 05:12 to 05:18 hours, you were actually riding your bicycle back and forth across the street from the restaurant to act as a lookout.", "targetText_zh": "我向你指出，喺凌晨五點十二分至五點十八分期間，你其實喺餐廳對面馬路踩住單車來回兜圈，目的係為咗「睇水」。", "targetText_en": "I suggest to you that from 05:12 to 05:18 hours, you were actually riding your bicycle back and forth across the street from the restaurant to act as a lookout." },
-                    { "turn": 6, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "我絕對唔同意。我搵唔到佢，咪喺附近兜下圈囉！我根本唔知佢哋入咗去餐廳搜掠，你唔好屈得就屈。", "text_en": "我絕對唔同意。我搵唔到佢，咪喺附近兜下圈囉！我根本唔知佢哋入咗去餐廳搜掠，你唔好屈得就屈。", "targetText_zh": "我絕對唔同意。我搵唔到佢，咪喺附近兜下圈囉！我根本唔知佢哋入咗去餐廳搜掠，你唔好屈得就屈。", "targetText_en": "I absolutely disagree. I couldn't find him, so I just cycled around the vicinity! I simply didn't know they had entered the restaurant to ransack. Do not frame me up arbitrarily." },
-                    { "turn": 7, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "Let me turn your attention to the CCTV footage. You helped D3 support a white plastic basket containing a stolen safe weighing over 30 kilograms on your bicycle, didn't you?", "text_en": "Let me turn your attention to the CCTV footage. You helped D3 support a white plastic basket containing a stolen safe weighing over 30 kilograms on your bicycle, didn't you?", "targetText_zh": "等我將你嘅注意力轉去閉路電視片段。你幫第三被告扶住一個白色膠籃喺你架單車上面，入面裝住一個重達三十幾公斤嘅失竊保險箱，係咪？", "targetText_en": "Let me turn your attention to the CCTV footage. You helped D3 support a white plastic basket containing a stolen safe weighing over 30 kilograms on your bicycle, didn't you?" },
-                    { "turn": 8, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "我見佢推到差啲仆低，咪出於好心幫手扶一扶囉！嗰陣我邊度知個膠籃入面裝住個夾萬同幾萬蚊現金吖！", "text_en": "我見佢推到差啲仆低，咪出於好心幫手扶一扶囉！嗰陣我邊度知個膠籃入面裝住個夾萬同幾萬蚊現金吖！", "targetText_zh": "我見佢推到差啲仆低，咪出於好心幫手扶一扶囉！嗰陣我邊度知個膠籃入面裝住個夾萬同幾萬蚊現金吖！", "targetText_en": "I saw he was pushing it and almost fell over, so I helped to balance it out of good intentions! How would I know the plastic basket contained a safe and tens of thousands of dollars in cash at that time?!" },
-                    { "turn": 9, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "Are you seriously asking the court to believe that you didn't notice the large white paper label on the basket clearly stating '100% Metro Harbour Plaza'?", "text_en": "Are you seriously asking the court to believe that you didn't notice the large white paper label on the basket clearly stating '100% Metro Harbour Plaza'?", "targetText_zh": "你係咪認真要求法庭相信，你留意唔到膠籃外面貼住一張好大嘅白紙，清楚寫住「百分百港灣豪庭」？", "targetText_en": "Are you seriously asking the court to believe that you didn't notice the large white paper label on the basket clearly stating '100% Metro Harbour Plaza'?" },
-                    { "turn": 10, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "天色咁黑，我根本冇為意出面貼咗咩紙。再講，我問佢啲嘢邊度嚟，佢答完我之後我已經即刻用粗口鬧佢啦！", "text_en": "天色咁黑，我根本冇為意出面貼咗咩紙。再講，我問佢啲嘢邊度嚟，佢答完我之後我已經即刻用粗口鬧佢啦！", "targetText_zh": "天色咁黑，我根本冇為意出面貼咗咩紙。再講，我問佢啲嘢邊度嚟，佢答完我之後我已經即刻用粗口鬧佢啦！", "targetText_en": "The sky was so dark, I simply didn't notice what paper was attached outside. Furthermore, when I asked him where the things came from and he replied, I immediately scolded him with foul language!" },
-                    { "turn": 11, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "Yet, after supposedly scolding him, you still took a taxi with D2 and D3 to Hoi Au House, bringing the stolen safe with you.", "text_en": "Yet, after supposedly scolding him, you still took a taxi with D2 and D3 to Hoi Au House, bringing the stolen safe with you.", "targetText_zh": "然而，喺你聲稱鬧完佢之後，你仍然同第二及第三被告一齊搭的士去海鷗樓，仲帶埋個偷返嚟嘅保險箱。", "targetText_en": "Yet, after supposedly scolding him, you still took a taxi with D2 and D3 to Hoi Au House, bringing the stolen safe with you." },
-                    { "turn": 12, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "因為佢話返到屋企先有錢還畀我吖嘛！我為咗追番借出去嗰三百蚊，唯有頂硬上跟埋佢哋上去囉。", "text_en": "因為佢話返到屋企先有錢還畀我吖嘛！我為咗追番借出去嗰三百蚊，唯有頂硬上跟埋佢哋上去囉。", "targetText_zh": "因為佢話返到屋企先有錢還畀我吖嘛！我為咗追番借出去嗰三百蚊，唯有頂硬上跟埋佢哋上去囉。", "targetText_en": "Because he said he would only have money to pay me back when he got home! In order to get back the 300 dollars I lent out, I had no choice but to bite the bullet and follow them up." },
-                    { "turn": 13, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "I challenge your assertion. You paid $280 for the taxi fare just to collect a $300 debt. Does that make any logical sense to you?", "text_en": "I challenge your assertion. You paid $280 for the taxi fare just to collect a $300 debt. Does that make any logical sense to you?", "targetText_zh": "我對你嘅說法提出質疑。你畀咗二百八十蚊的士錢，只係為咗收番三百蚊嘅欠款。你覺得噉樣合乎邏輯咩？", "targetText_en": "I challenge your assertion. You paid $280 for the taxi fare just to collect a $300 debt. Does that make any logical sense to you?" },
-                    { "turn": 14, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "三百蚊都係錢吖！我窮吖嘛，事後佢喺單位入面畀返五百八十蚊我，連埋車錢找數，有咩問題先？", "text_en": "三百蚊都係錢吖！我窮吖嘛，事後佢喺單位入面畀返五百八十蚊我，連埋車錢找數，有咩問題先？", "targetText_zh": "三百蚊都係錢吖！我窮吖嘛，事後佢喺單位入面畀返五百八十蚊我，連埋車錢找數，有咩問題先？", "targetText_en": "300 dollars is still money! I am poor. Afterwards, he gave me back 580 dollars inside the flat, settling the debt including the taxi fare. What is the problem with that?" },
-                    { "turn": 15, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "If you had FPS set up on your phone, you could have easily asked him to transfer the money electronically instead of making this elaborate trip.", "text_en": "If you had FPS set up on your phone, you could have easily asked him to transfer the money electronically instead of making this elaborate trip.", "targetText_zh": "如果你電話有安裝轉數快（FPS），你好輕易就可以叫佢電子轉帳還錢，而唔需要大費周章去呢趟旅程。", "targetText_en": "If you had FPS set up on your phone, you could have easily asked him to transfer the money electronically instead of making this elaborate trip." },
-                    { "turn": 16, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "佢話淨係得現金吖嘛！如果我唔跟埋去，分分鐘連影都冇埋。我只係想收返自己啲錢，根本就冇參與過入屋爆竊！", "text_en": "佢話淨係得現金吖嘛！如果我唔跟埋去，分分鐘連影都冇埋。我只係想收返自己啲錢，根本就冇參與過入屋爆竊！", "targetText_zh": "佢話淨係得現金吖嘛！如果我唔跟埋去，分分鐘連影都冇埋。我只係想收返自己啲錢，根本就冇參與過入屋爆竊！", "targetText_en": "He said he only had cash! If I didn't tag along, he might have disappeared without a trace. I just wanted to get my money back, and simply never participated in the burglary!" },
-                    { "turn": 17, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "I put it to you that the entire story about lending $300 is a complete fabrication designed to conceal your role as the getaway driver.", "text_en": "I put it to you that the entire story about lending $300 is a complete fabrication designed to conceal your role as the getaway driver.", "targetText_zh": "我向你指出，成個關於借三百蚊嘅古仔完全係捏造出嚟嘅，目的係為咗掩飾你作為接應司機嘅角色。", "targetText_en": "I put it to you that the entire story about lending $300 is a complete fabrication designed to conceal your role as the getaway driver." },
-                    { "turn": 18, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "我冇作故仔！所有閉路電視都見唔到我入過去間餐廳。你哋而家係見我出現喺附近，就想夾硬砌我生豬肉！", "text_en": "我冇作故仔！所有閉路電視都見唔到我入過去間餐廳。你哋而家係見我出現喺附近，就想夾硬砌我生豬肉！", "targetText_zh": "我冇作故仔！所有閉路電視都見唔到我入過去間餐廳。你哋而家係見我出現喺附近，就想夾硬砌我生豬肉！", "targetText_en": "I am not making up stories! None of the CCTVs show me entering that restaurant. You guys are just seeing me appear nearby and trying to frame me up forcefully!" },
-                    { "turn": 19, "role_zh": "主控官", "role_en": "Prosecutor", "lang": "en-US", "text_zh": "I suggest to you that you were a fully aware and active member of this joint enterprise, helping to transport the stolen property with your bicycle.", "text_en": "I suggest to you that you were a fully aware and active member of this joint enterprise, helping to transport the stolen property with your bicycle.", "targetText_zh": "我向你指出，你係完全知情並且積極參與呢次共同犯罪計劃嘅成員，利用你架單車協助運送失竊財物。", "targetText_en": "I suggest to you that you were a fully aware and active member of this joint enterprise, helping to transport the stolen property with your bicycle." },
-                    { "turn": 20, "role_zh": "第一被告", "role_en": "1st Defendant", "lang": "zh-HK", "text_zh": "我絕對不同意！由頭到尾我只係借錢畀朋友，你哋講到我好似主謀咁，簡直係不分青紅皂白！", "text_en": "我絕對不同意！由頭到尾我只係借錢畀朋友，你哋講到我好似主謀咁，簡直係不分青紅皂白！", "targetText_zh": "我絕對不同意！由頭到尾我只係借錢畀朋友，你哋講到我好似主謀咁，簡直係不分青紅皂白！", "targetText_en": "I absolutely disagree! From beginning to end, I was only lending money to a friend. You are describing me as if I were the mastermind; this is completely confusing right and wrong!" }
-                ]
-            },
             {
                 id: "preset_hcma_314_extended",
                 title_zh: "刑事 ➜ [擴充版] 戲院通道非禮及刑事恐嚇案 (HCMA 314/2013)",
@@ -437,6 +428,14 @@
             const [lang, setLang] = useState("zh");
             const [isInverted, setIsInverted] = useState(false);
             
+            const [githubToken, setGithubToken] = useState(localStorage.getItem("cls_github_token") || "");
+            const [gistId, setGistId] = useState(localStorage.getItem("cls_gist_id") || "");
+            const [syncStatusMsg, setSyncStatusMsg] = useState("");
+
+            // 新增 Google TTS API 狀態與本地儲存
+            const [ttsApiKey, setTtsApiKey] = useState(localStorage.getItem("cls_tts_key") || "");
+            useEffect(() => { localStorage.setItem("cls_tts_key", ttsApiKey); }, [ttsApiKey]);
+
             useEffect(() => {
                 if (isInverted) {
                     document.documentElement.style.filter = 'invert(1) hue-rotate(180deg)';
@@ -496,6 +495,7 @@
             const recognitionRef = useRef(null);
             const mediaRecorderRef = useRef(null);
             const audioChunksRef = useRef([]);
+            const micStreamRef = useRef(null); 
 
             const TString = T[lang];
 
@@ -511,6 +511,14 @@
                 };
                 loadVoices();
                 if (window.speechSynthesis.onvoiceschanged !== undefined) window.speechSynthesis.onvoiceschanged = loadVoices;
+            }, []);
+
+            useEffect(() => {
+                return () => {
+                    if (micStreamRef.current) {
+                        micStreamRef.current.getTracks().forEach(track => track.stop());
+                    }
+                };
             }, []);
 
             const handleUnlockAdmin = () => {
@@ -552,7 +560,45 @@
                 downloadAnchor.remove();
             };
 
-            const playOriginalSound = (text, langCode, speakerRole) => {
+            const playOriginalSound = async (text, langCode, speakerRole) => {
+                // 如果有輸入 TTS API Key，優先使用 Google Cloud 高品質原聲
+                if (ttsApiKey.trim()) {
+                    try {
+                        // 根據法庭角色配置聲音：男聲/女聲交替
+                        let voiceName = "en-US-Neural2-F"; 
+                        if (langCode.includes("zh") || langCode.includes("yue")) {
+                            // 廣東話：Standard-B (男) / Standard-A (女)
+                            voiceName = speakerRole === "questioner" ? "yue-HK-Standard-B" : "yue-HK-Standard-A"; 
+                        } else {
+                            // 英文：Neural2-D (男) / Neural2-F (女)
+                            voiceName = speakerRole === "questioner" ? "en-US-Neural2-D" : "en-US-Neural2-F";
+                        }
+
+                        const requestBody = {
+                            input: { text: text },
+                            voice: { languageCode: langCode === "en-US" ? "en-US" : "yue-HK", name: voiceName },
+                            audioConfig: { audioEncoding: "MP3", speakingRate: speechRate }
+                        };
+
+                        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${ttsApiKey.trim()}`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(requestBody)
+                        });
+
+                        if (!response.ok) throw new Error("Google Cloud TTS API 錯誤");
+                        
+                        const data = await response.json();
+                        const audio = new Audio("data:audio/mp3;base64," + data.audioContent);
+                        // 播放雲端原聲
+                        audio.play();
+                        return; // 成功播放後直接結束，不執行下方的備用方案
+                    } catch (error) {
+                        console.error("雲端語音生成失敗，自動切換回本機機械語音:", error);
+                    }
+                }
+
+                // 備用方案：如果沒有 API Key 或斷網，退回使用瀏覽器內建 Web Speech API
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 const selectedVoice = speakerRole === "questioner" ? voices.find(v => v.name === voiceA) : voices.find(v => v.name === voiceB);
@@ -567,9 +613,6 @@
                     if (recognitionRef.current) recognitionRef.current.stop();
                     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
                         mediaRecorderRef.current.stop();
-                        if (mediaRecorderRef.current.stream) {
-                            mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
-                        }
                     }
                     setIsRecording(false);
                     return;
@@ -577,80 +620,79 @@
 
                 audioChunksRef.current = [];
 
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert("您的瀏覽器不支援語音辨識功能。建議使用最新版 Google Chrome。");
-                    return;
-                }
+                const startProcess = (stream) => {
+                    micStreamRef.current = stream; 
+                    const recorder = new MediaRecorder(stream);
+                    mediaRecorderRef.current = recorder;
 
-                const rec = new SpeechRecognition();
-                recognitionRef.current = rec;
-                rec.continuous = true;
-                rec.interimResults = true;
-                rec.lang = targetLangCode;
+                    recorder.ondataavailable = e => {
+                        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+                    };
 
-                rec.onstart = () => {
-                    setIsRecording(true);
-                    setRecordingTurn(turnIdx);
-                };
+                    recorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        setRecordedUrls(prev => ({ ...prev, [turnIdx]: audioUrl }));
+                    };
 
-                rec.onresult = (event) => {
-                    let finalTranscript = '';
-                    for (let i = event.resultIndex; i < event.results.length; ++i) {
-                        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
-                    }
-                    if (finalTranscript) {
-                        setUserTranslations(prev => ({ ...prev, [turnIdx]: (prev[turnIdx] || "") + finalTranscript }));
-                    }
-                };
+                    recorder.start();
 
-                rec.onerror = (e) => {
-                    console.error("Speech Recognition Error:", e.error);
-                    if (e.error === 'not-allowed') {
-                        alert("麥克風授權被拒絕。\n如果是在本地硬碟 (file:///) 執行，Chrome 可能會強制阻擋麥克風。請將此檔案上傳至 GitHub Pages，或使用 Localhost 伺服器打開！");
-                    }
-                    setIsRecording(false);
-                    setRecordingTurn(null);
-                };
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (SpeechRecognition) {
+                        const rec = new SpeechRecognition();
+                        recognitionRef.current = rec;
+                        rec.continuous = true;
+                        rec.interimResults = true;
+                        rec.lang = targetLangCode;
 
-                rec.onend = () => {
-                    setIsRecording(false);
-                    setRecordingTurn(null);
-                };
+                        rec.onstart = () => {
+                            setIsRecording(true);
+                            setRecordingTurn(turnIdx);
+                        };
 
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ audio: true })
-                        .then(stream => {
-                            const recorder = new MediaRecorder(stream);
-                            mediaRecorderRef.current = recorder;
-
-                            recorder.ondataavailable = e => {
-                                if (e.data.size > 0) audioChunksRef.current.push(e.data);
-                            };
-
-                            recorder.onstop = () => {
-                                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-                                const audioUrl = URL.createObjectURL(audioBlob);
-                                setRecordedUrls(prev => ({ ...prev, [turnIdx]: audioUrl }));
-                                stream.getTracks().forEach(track => track.stop());
-                            };
-
-                            recorder.start();
-                            
-                            try {
-                                rec.start();
-                            } catch (err) {
-                                console.error("Rec Start Error:", err);
+                        rec.onresult = (event) => {
+                            let finalTranscript = '';
+                            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                                if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
                             }
-                        })
-                        .catch(err => {
-                            console.error("MediaDevices Error:", err);
-                            alert(`無法存取麥克風 (${err.name})。\n請確保：\n1. 電腦麥克風硬體已接妥。\n2. 系統設定中已允許 Chrome 存取麥克風。\n3. 此網頁必須在 HTTPS 或 Localhost 環境下執行！`);
+                            if (finalTranscript) {
+                                setUserTranslations(prev => ({ ...prev, [turnIdx]: (prev[turnIdx] || "") + finalTranscript }));
+                            }
+                        };
+
+                        rec.onerror = (e) => {
+                            console.error("Speech Recognition Error:", e);
+                            if(e.error === 'not-allowed') {
+                                alert("語音辨識被拒絕。\n如果是在本地硬碟 (file:///) 執行，Chrome 會強制阻擋或每次要求授權。\n建議解決方案：使用 Localhost 伺服器打開，或部署到靜態網頁空間。");
+                            }
+                        };
+                        
+                        rec.onend = () => {
                             setIsRecording(false);
                             setRecordingTurn(null);
-                        });
+                        };
+
+                        try {
+                            rec.start();
+                        } catch (err) {
+                            console.error(err);
+                        }
+                    }
+                };
+
+                if (micStreamRef.current && micStreamRef.current.active) {
+                    startProcess(micStreamRef.current);
                 } else {
-                    alert("瀏覽器環境不支援錄音 API (缺少安全連線 HTTPS)。");
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(startProcess)
+                            .catch(err => {
+                                console.error(err);
+                                alert("無法存取麥克風。請確保已在瀏覽器或系統設定中授權！\n\n提示：若在本地硬碟執行 (file:///)，瀏覽器會因為安全機制而阻擋麥克風。請使用 VS Code 的 Live Server 或 Python 建立 Localhost 伺服器來打開此檔案！");
+                            });
+                    } else {
+                        alert("此瀏覽器環境不支援麥克風 API (缺少安全連線 HTTPS 或 Localhost)。");
+                    }
                 }
             };
 
@@ -764,7 +806,7 @@
                             { turn: 7, role_zh: "辯方大律師", role_en: "Defense Counsel", lang: "en-US", text_zh: "I suggest that the allegation of indecent assault was entirely fabricated to vent your anger over the queue dispute.", text_en: "I suggest that the allegation of indecent assault was entirely fabricated to vent your anger over the queue dispute.", targetText_zh: "我向你指出，非禮嘅指控完全係你捏造出嚟，純粹係為咗發洩你對排隊糾紛嘅不滿。 ", targetText_en: "I suggest that the allegation of indecent assault was entirely fabricated to vent your anger over the queue dispute." },
                             { turn: 8, role_zh: "事主 / 證人", role_en: "Witness", lang: "zh-HK", text_zh: "我絕對唔同意。我事後即刻報告地鐵職員，有晒閉路電視，我唔會拿清白講笑！", text_en: "I absolutely disagree. I reported to the MTR staff immediately afterwards, there's CCTV everywhere, I won't joke with my innocence!", targetText_zh: "我絕對唔同意。我事後即刻報告地鐵職員，有晒閉路電視，我唔會拿清白講笑！", targetText_en: "I absolutely disagree. I reported the matter to MTR staff immediately afterwards, there was CCTV, and I would not joke with my reputation!" },
                             { turn: 9, role_zh: "辯方大律師", role_en: "Defense Counsel", lang: "en-US", text_zh: "Under the guidelines, any body contact through clothing can still be highly ambiguous. Is it possible it was just a normal brush?", text_en: "Under the guidelines, any body contact through clothing can still be highly ambiguous. Is it possible it was just a normal brush?", targetText_zh: "喺相關指引下，隔住衣物嘅身體接觸都可以好模糊。當時係咪有可能只係普通擦過？", targetText_en: "Under the guidelines, any body contact through clothing can still be highly ambiguous. Is it possible it was just a normal brush?" },
-                            { turn: 10, "role_zh": "事主 / 證人", role_en: "Witness", lang: "zh-HK", text_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", text_en: "Absolutely not. The touching was very forceful and it was squeezed several times, how could it be an accidental brush?!", targetText_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", targetText_en: "Absolutely not. The touch was very hard and it was squeezed several times, how could it be an accidental brush?!" }
+                            { turn: 10, role_zh: "事主 / 證人", role_en: "Witness", lang: "zh-HK", text_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", text_en: "Absolutely not. The touching was very forceful and it was squeezed several times, how could it be an accidental brush?!", targetText_zh: "絕對唔係。個觸碰好大力，而且係揸咗幾下，點會係唔小心擦過？！", targetText_en: "Absolutely not. The touch was very hard and it was squeezed several times, how could it be an accidental brush?!" }
                         ]
                     };
 
@@ -820,7 +862,7 @@ OUTPUT MATRIX JSON SCHEMA:
                         generationConfig: { responseMimeType: "application/json" }
                     };
 
-                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiToUse}`;
+                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiToUse}`;
                     const response = await fetch(endpoint, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -962,6 +1004,132 @@ OUTPUT MATRIX JSON SCHEMA:
                 window.open(url, "_blank");
             };
 
+            // === GitHub Gist Cloud Sync & Bundled Export Functions ===
+            const syncToGist = async () => {
+                if (!githubToken.trim()) { alert(TString.githubToken + " (Token) " + (lang==='zh'?"尚未填寫":"is required")); return; }
+                setSyncStatusMsg(lang==='zh'?"正在上傳至 GitHub Gist...":"Uploading to GitHub Gist...");
+                const customPresets = presets.filter(p => p.id.startsWith("custom_"));
+                const payload = {
+                    description: "CLS Court Interpreter Training Presets",
+                    public: false,
+                    files: {
+                        "cls_presets.json": {
+                            content: JSON.stringify({
+                                exportedAt: new Date().toISOString(),
+                                presets: customPresets
+                            }, null, 2)
+                        }
+                    }
+                };
+                try {
+                    const url = gistId.trim() ? `https://api.github.com/gists/${gistId.trim()}` : "https://api.github.com/gists";
+                    const method = gistId.trim() ? "PATCH" : "POST";
+                    const res = await fetch(url, {
+                        method,
+                        headers: {
+                            "Authorization": `token ${githubToken.trim()}`,
+                            "Content-Type": "application/json",
+                            "Accept": "application/vnd.github.v3+json"
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!res.ok) {
+                        const errData = await res.json().catch(()=>({}));
+                        throw new Error(errData.message || `HTTP ${res.status}`);
+                    }
+                    const data = await res.json();
+                    setGistId(data.id);
+                    localStorage.setItem("cls_gist_id", data.id);
+                    localStorage.setItem("cls_github_token", githubToken.trim());
+                    setSyncStatusMsg((lang==='zh'?"✅ 同步成功！Gist ID: ":"✅ Synced! Gist ID: ") + data.id);
+                } catch (err) {
+                    setSyncStatusMsg((lang==='zh'?"❌ 同步失敗: ":"❌ Sync failed: ") + err.message);
+                }
+            };
+
+            const fetchFromGist = async () => {
+                if (!gistId.trim()) { alert("Gist ID " + (lang==='zh'?"尚未填寫":"is required")); return; }
+                if (!githubToken.trim()) { alert(TString.githubToken + " (Token) " + (lang==='zh'?"尚未填寫":"is required")); return; }
+                setSyncStatusMsg(lang==='zh'?"正在從 Gist 下載...":"Downloading from Gist...");
+                try {
+                    const res = await fetch(`https://api.github.com/gists/${gistId.trim()}`, {
+                        headers: {
+                            "Authorization": `token ${githubToken.trim()}`,
+                            "Accept": "application/vnd.github.v3+json"
+                        }
+                    });
+                    if (!res.ok) {
+                        const errData = await res.json().catch(()=>({}));
+                        throw new Error(errData.message || `HTTP ${res.status}`);
+                    }
+                    const data = await res.json();
+                    const file = data.files && data.files["cls_presets.json"];
+                    if (!file || !file.content) throw new Error(lang==='zh'?"Gist 中找不到 cls_presets.json":"cls_presets.json not found in Gist");
+                    const parsed = JSON.parse(file.content);
+                    const imported = parsed.presets || [];
+                    if (!Array.isArray(imported) || imported.length === 0) {
+                        setSyncStatusMsg(lang==='zh'?"ℹ️ Gist 中沒有自訂教材":"ℹ️ No custom presets found in Gist");
+                        return;
+                    }
+                    setPresets(prev => {
+                        const base = prev.filter(p => !p.id.startsWith("custom_"));
+                        const merged = [...imported, ...base];
+                        // 去重（以 id 為準）
+                        const seen = new Set();
+                        return merged.filter(p => {
+                            if (seen.has(p.id)) return false;
+                            seen.add(p.id);
+                            return true;
+                        });
+                    });
+                    setSyncStatusMsg((lang==='zh'?"✅ 成功下載 ":"✅ Downloaded ") + imported.length + (lang==='zh'?" 個自訂教材":" custom preset(s)"));
+                } catch (err) {
+                    setSyncStatusMsg((lang==='zh'?"❌ 下載失敗: ":"❌ Download failed: ") + err.message);
+                }
+            };
+
+            const exportBundledHTML = () => {
+                try {
+                    setSyncStatusMsg(lang==='zh'?"正在打包完整系統...":"Bundling system...");
+                    let html = document.documentElement.outerHTML;
+                    html = html.replace(/<html[^>]*style="[^"]*"[^>]*>/, '<html lang="zh-Hant">');
+                    html = html.replace(/<html[^>]*>/, '<html lang="zh-Hant">');
+                    html = html.replace(/<div id="root">[\s\S]*?<\/div>/, '<div id="root"></div>');
+                    const presetsJson = JSON.stringify(presets, null, 8);
+                    const marker = "const ORIGINAL_PRESETS = [";
+                    const startIdx = html.indexOf(marker);
+                    if (startIdx === -1) {
+                        alert(lang==='zh'?"無法定位教材庫數據區塊，打包失敗。":"Cannot locate preset data block.");
+                        setSyncStatusMsg("");
+                        return;
+                    }
+                    const endMarker = "function evaluateTranslationQuality";
+                    const endIdx = html.indexOf(endMarker, startIdx);
+                    if (endIdx === -1) {
+                        alert(lang==='zh'?"無法定位教材庫結尾，打包失敗。":"Cannot locate preset block end.");
+                        setSyncStatusMsg("");
+                        return;
+                    }
+                    const before = html.substring(0, startIdx);
+                    const after = html.substring(endIdx);
+                    html = before + "const ORIGINAL_PRESETS = " + presetsJson + ";\n\n        " + after;
+                    html = "<!DOCTYPE html>\n<!-- CLS Bundled Export | " + new Date().toLocaleString('zh-HK') + " | " + presets.length + " Cases -->\n" + html;
+                    const blob = new Blob([html], { type: "text/html" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "CLS_Training_System_" + new Date().toISOString().slice(0,10) + ".html";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    setSyncStatusMsg(lang==='zh'?"✅ 完整系統已打包下載":"✅ Bundled system exported");
+                } catch (err) {
+                    setSyncStatusMsg((lang==='zh'?"❌ 打包失敗: ":"❌ Bundle failed: ") + err.message);
+                    console.error(err);
+                }
+            };
+
             const activeDialogueSlice = currentCase.dialogue.slice(0, practiceTurnsLimit);
             let totalAccuracy = 0, totalTone = 0, totalLegal = 0, totalDelivery = 0, answeredCount = 0;
             
@@ -1012,7 +1180,7 @@ OUTPUT MATRIX JSON SCHEMA:
                         {/* LEFT: Presets & Config */}
                         <div className="col-span-12 lg:col-span-4 flex flex-col space-y-6">
                             
-                            {/* Settings block */}
+                            {/* Settings block with Voice Selections */}
                             <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm space-y-4">
                                 <h2 className="text-sm font-bold text-gray-800 flex items-center space-x-2 border-b pb-2">
                                     <Icons.Settings />
@@ -1049,6 +1217,42 @@ OUTPUT MATRIX JSON SCHEMA:
                                             <option value={1.2}>1.2x</option>
                                         </select>
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">{TString.prosecutorVoice}</label>
+                                        <select 
+                                            value={voiceA} 
+                                            onChange={(e) => setVoiceA(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-xs font-bold text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900 truncate"
+                                        >
+                                            {voices.map((v, i) => <option key={`voiceA-${i}`} value={v.name}>{v.name} ({v.lang})</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">{TString.witnessVoice}</label>
+                                        <select 
+                                            value={voiceB} 
+                                            onChange={(e) => setVoiceB(e.target.value)}
+                                            className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-xs font-bold text-blue-900 focus:outline-none focus:ring-1 focus:ring-blue-900 truncate"
+                                        >
+                                            {voices.map((v, i) => <option key={`voiceB-${i}`} value={v.name}>{v.name} ({v.lang})</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="mt-3 border-t border-gray-100 pt-3">
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 flex justify-between">
+                                        <span>🔑 Google TTS API 金鑰 (解鎖人類原聲)</span>
+                                        <a href="https://console.cloud.google.com/" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">獲取</a>
+                                    </label>
+                                    <input 
+                                        type="password" 
+                                        value={ttsApiKey}
+                                        onChange={e => setTtsApiKey(e.target.value)}
+                                        placeholder="貼上金鑰，系統將自動升級為雲端神經網絡語音..."
+                                        className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-xs font-bold text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-900"
+                                    />
                                 </div>
                             </div>
 
@@ -1102,6 +1306,66 @@ OUTPUT MATRIX JSON SCHEMA:
                                             <p className="text-xs text-gray-600 line-clamp-2">{lang === 'zh' ? item.desc_zh : item.desc_en}</p>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+
+                            {/* Cloud Sync & Backup Block */}
+                            <div className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm space-y-4">
+                                <h2 className="text-sm font-bold text-gray-800 flex items-center space-x-2 border-b pb-2">
+                                    <span>☁️</span>
+                                    <span>{TString.cloudSyncTitle}</span>
+                                </h2>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">{TString.githubToken}</label>
+                                        <input 
+                                            type="password" 
+                                            value={githubToken}
+                                            onChange={e => setGithubToken(e.target.value)}
+                                            placeholder="ghp_xxxxxxxxxxxx"
+                                            className="w-full text-xs p-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-900"
+                                        />
+                                        <p className="text-[10px] text-gray-400 mt-0.5">{TString.tokenHint}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 mb-1">{TString.gistId}</label>
+                                        <input 
+                                            type="text" 
+                                            value={gistId}
+                                            onChange={e => setGistId(e.target.value)}
+                                            placeholder="e.g., a1b2c3d4e5f6..."
+                                            className="w-full text-xs p-2 border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-900"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button 
+                                            onClick={syncToGist}
+                                            className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-2 px-3 rounded-lg text-xs transition-all"
+                                        >
+                                            {TString.uploadGist}
+                                        </button>
+                                        <button 
+                                            onClick={fetchFromGist}
+                                            className="bg-white border border-blue-900 text-blue-900 hover:bg-blue-50 font-bold py-2 px-3 rounded-lg text-xs transition-all"
+                                        >
+                                            {TString.downloadGist}
+                                        </button>
+                                    </div>
+
+                                    <button 
+                                        onClick={exportBundledHTML}
+                                        className="w-full bg-amber-500 hover:bg-amber-600 text-blue-900 font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center space-x-1.5 transition-all shadow"
+                                    >
+                                        <span>{TString.bundleHtml}</span>
+                                    </button>
+
+                                    {syncStatusMsg && (
+                                        <div className={`text-[11px] font-bold p-2 rounded ${syncStatusMsg.startsWith("✅") ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : syncStatusMsg.startsWith("❌") ? "bg-rose-50 text-rose-700 border border-rose-200" : "bg-blue-50 text-blue-700 border border-blue-200"}`}>
+                                            {syncStatusMsg}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
