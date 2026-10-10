@@ -85,7 +85,7 @@
                 customImportTitle: "自訂案情導入 (PDF/DOCX/TXT/JSON)",
                 customImportDesc: "上載起訴書、案情摘要或已匯出的 JSON 教材。若是文檔，AI 會自動拼裝成指定輪數的中英雙向考卷。",
                 uploadFile: "📁 選擇或拖曳案情文件 (.pdf/.docx/.txt/.json)",
-                apiKey: "🔑 自訂 GEMINI API 金鑰 (非必填)",
+                apiKey: "🔑 自訂 OpenRouter API 金鑰 (非必填)",
                 importPlaceholder: "或在此處直接粘貼案件描述與控罪細節...",
                 category: "🎯 歸類至：",
                 criminal: "刑事案件",
@@ -141,7 +141,7 @@
                 customImportTitle: "Custom Case Importer (PDF/DOCX/TXT/JSON)",
                 customImportDesc: "Upload summary of facts or exported JSON courseware. AI will assemble alternating Q&A simulation.",
                 uploadFile: "📁 Upload Case File (.pdf/.docx/.txt/.json)",
-                apiKey: "🔑 Gemini API Key (Optional)",
+                apiKey: "🔑 OpenRouter API Key (Optional)",
                 importPlaceholder: "Or paste case descriptions here...",
                 category: "🎯 Category:",
                 criminal: "Criminal",
@@ -490,7 +490,7 @@
             const [customBriefText, setCustomBriefText] = useState("");
             const [isGeneratingCase, setIsGeneratingCase] = useState(false);
             const [saveToCategory, setSaveToCategory] = useState("custom");
-            const [geminiApiKey, setGeminiApiKey] = useState("");
+            const [openRouterApiKey, setOpenRouterApiKey] = useState("");
 
             const recognitionRef = useRef(null);
             const mediaRecorderRef = useRef(null);
@@ -781,7 +781,7 @@
                 }
 
                 setIsGeneratingCase(true);
-                const apiToUse = geminiApiKey.trim() || "";
+                const apiToUse = openRouterApiKey.trim() || "";
                 
                 const runLocalMockGenerator = () => {
                     const detectedLocations = customBriefText.match(/(旺角|尖沙咀|銅鑼灣|大圍|荃灣|沙田)/g) || ["旺角"];
@@ -857,21 +857,28 @@ OUTPUT MATRIX JSON SCHEMA:
   ]
 }`;
                     const payload = {
-                        contents: [{ parts: [{ text: `Case Fact Brief:\n${customBriefText}\n\nGenerate full 20-turn JSON now based on instructions.` }] }],
-                        systemInstruction: { parts: [{ text: systemPrompt }] },
-                        generationConfig: { responseMimeType: "application/json" }
+                        model: "z-ai/glm-5.3-flash",
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: `Case Fact Brief:\n${customBriefText}\n\nGenerate full 20-turn JSON now based on instructions.` }
+                        ],
+                        response_format: { type: "json_object" },
+                        reasoning: { effort: "medium" },
+                        // Reasoning tokens count toward this; truncation falls back to the mock generator.
+                        max_tokens: 20000,
+                        // Skip providers that silently ignore response_format.
+                        provider: { require_parameters: true }
                     };
 
-                    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiToUse}`;
-                    const response = await fetch(endpoint, {
+                    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiToUse}` },
                         body: JSON.stringify(payload)
                     });
-                    
+
                     if (!response.ok) throw new Error("API failed");
                     const data = await response.json();
-                    const rawJsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    const rawJsonText = data.choices?.[0]?.message?.content;
                     
                     const cleanJson = rawJsonText.replace(/[`]{3}(json)?/gi, "").trim();
                     const parsed = JSON.parse(cleanJson);
@@ -1516,9 +1523,9 @@ OUTPUT MATRIX JSON SCHEMA:
                                         <label className="block text-xs font-bold text-gray-500">{TString.apiKey}</label>
                                         <input 
                                             type="password" 
-                                            placeholder="AI Key (Optional)"
-                                            value={geminiApiKey}
-                                            onChange={e => setGeminiApiKey(e.target.value)}
+                                            placeholder="sk-or-... (Optional)"
+                                            value={openRouterApiKey}
+                                            onChange={e => setOpenRouterApiKey(e.target.value)}
                                             className="w-full text-xs p-2.5 border border-gray-300 rounded-lg text-gray-900"
                                         />
                                     </div>
